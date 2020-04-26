@@ -1,0 +1,18 @@
+body {
+    background-color: skyblue;
+}
+
+main {
+    background-color: aliceblue;
+    margin-top: 5%;
+}
+
+#DBinfo{
+    background-color: whitesmoke;
+}
+
+@media print {
+    main * { visibility: hidden; }
+    table * { visibility: visible;}
+    table { position: absolute; top: 40px; left: 0px; }
+}

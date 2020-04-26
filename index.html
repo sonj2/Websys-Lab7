@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html ng-app="tickerApp" ng-controller="mainController">
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+    <link rel="stylesheet" href="index.css">
+    <script src="index.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+</head>
+
+<body>
+    <main role="main" class="jumbotron">
+        <h1 class="display-4 text-center">Quick Quotes</h1>
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Stock Symbol</span>
+                    </div>
+                    <input type="text" id="symbol" class="form-control" aria-label="Stock Symbol" placeholder="Stock Symbol" ng-model="stockSymbol">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-primary" type="button" ng-click="apicall()">Add Symbol</button>
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <button id="export" class="btn btn-outline-secondary" type="button" ng-click="export()" ng-href="exportFile">Export</button>
+                    </div>
+                    <select id="type" class="custom-select" id="inputGroupSelect03"
+                        aria-label="Example select with button addon" ng-model="exportVar" ng-init="exportVar = exportType[0]" ng-options="x for x in exportType">
+                    </select>
+                </div>
+                <div class="row justify-content-between">
+                    <div class="btn-group" role="group" aria-label="Access DB">
+                        <button type="button" class="btn btn-success" ng-click="readDB()">Read</button>
+                        <button type="button" class="btn btn-danger" data-toggle="modal"
+                            data-target="#warningModal">Reset</button>
+                    </div>
+                    <div class="btn-group" role="group" aria-label="Access DB">
+                        <button type="button" class="btn btn-secondary" ng-hide="printRdy" ng-click="print()">Print Data</button>
+                        <button type="button" id="batchCall" class="btn btn-info" data-toggle="modal"
+                            data-target="#batchModal">Batch Lookup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <br></br>
+    <div id="DBinfo" class="container">
+        <table class="table table-bordered w-auto" ng-table="quotes">
+            <thead ng-hide="tableVis">
+                <tr>
+                    <th>Stock Symbol</th>
+                    <th>Open price of the day</th>
+                    <th>High price of the day</th>
+                    <th>Low price of the day</th>
+                    <th>Current price</th>
+                    <th>Previous close price</th>
+                    <th>Time of request</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="x in data | orderBy: 't'">
+                    <td>{{ x.symbol }}</td>
+                    <td>{{ "$" + x.o }}</td>
+                    <td>{{ "$" + x.h }}</td>
+                    <td>{{ "$" + x.l }}</td>
+                    <td>{{ "$" + x.c }}</td>
+                    <td>{{ "$" + x.pc }}</td>
+                    <td>{{ x.t * 1000 | date : "medium" }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+</body>
+<footer>
+    <div class="modal fade" id="warningModal" data-backdrop="static" tabindex="-1" role="dialog"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Database Reset Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to reset the database? The data cannot be recovered after reset.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="reset" type="button" class="btn btn-danger" ng-click="reset()">Understood</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="batchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Batch Lookup</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="form-group">
+                  <h6 id="installState">Looks like the database is empty. Perhaps this is the first time? Lets initialize with a batch call.</h6>
+                  <p>Batch symbol call: separate the stock symbols with a semicolon. Symbols will be added if they are valid.</p>
+                </div>
+                <hr>
+                <div class="form-group">
+                  <label for="batch-text" class="col-form-label">Symbols:</label>
+                  <textarea class="form-control" id="batch-text"></textarea>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="batchCall()">Add Symbols</button>
+            </div>
+          </div>
+        </div>
+      </div>
+</footer>
+
+</html>
