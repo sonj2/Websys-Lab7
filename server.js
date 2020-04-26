@@ -173,6 +173,64 @@ app.get('/test', async (req, res) => { //check if the DB collection is empty
     }
 });
 
+//Calls for visual.html
+app.get('/visual.html/pie', async (req, res) => {
+    try {
+        await client.db("Test").collection("Quotes").aggregate([{ $group: { _id: "$symbol", count: { $sum: 1 } } }, { $sort: { "count": -1 } }], (error, cursor) => {
+            if (error) {
+                throw error;
+            }
+            cursor.toArray((error, documents) => {
+                if (error) {
+                    throw error;
+                }
+                res.send(documents);
+            });
+        });
+    } catch (e) {
+        console.log(e);
+    }
+});
+
+app.get('/visual.html/line', async (req, res) => {
+    try {
+        await client.db("Test").collection("Quotes").distinct("symbol", async (err, result) => {
+            var symbol = result[Math.floor(Math.random() * result.length)];
+            await client.db("Test").collection("Quotes").find({symbol: symbol},(error, cursor) => {
+                if (error) {
+                    throw error;
+                }
+                cursor.toArray((error, documents) => {
+                    if (error) {
+                        throw error;
+                    }
+                    res.send(documents);
+                });
+            });
+        });
+    } catch (e) {
+        console.log(e);
+    }
+});
+
+app.get('/visual.html/bar', async (req, res) => {
+    try {
+        await client.db("Test").collection("Quotes").aggregate([{ $group: { _id: "$t" } }], (error, cursor) => {
+            if (error) {
+                throw error;
+            }
+            cursor.toArray((error, documents) => {
+                if (error) {
+                    throw error;
+                }
+                res.send(documents);
+            });
+        });
+    } catch (e) {
+        console.log(e);
+    }
+});
+
 app.listen(app.get('port'), function () {
     connect().then(r => console.log('The server is running on http://localhost:' + app.get('port')));
 });

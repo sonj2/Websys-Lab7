@@ -66,4 +66,7 @@ tickerApp.controller('mainController', function($scope){
             $("#installState").hide();
         }
     });
+    $scope.visualize = function() {
+        window.location.href = "visual.html";
+    }
 });
